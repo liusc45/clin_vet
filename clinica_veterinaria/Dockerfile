@@ -34,7 +34,11 @@ VOLUME /app/logs
 EXPOSE 8080
 
 # Metadatos
+<<<<<<< HEAD
 LABEL maintainer="tu_email@example.com"
+=======
+LABEL maintainer="todocodeacademy@gmail.com"
+>>>>>>> origin/master
 LABEL version="1.0"
 LABEL description="Aplicación de clínica veterinaria construida con Spring Boot."
 
