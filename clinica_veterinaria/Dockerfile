@@ -1,30 +1,24 @@
 # Etapa de construcción
-FROM amazoncorretto:17.0.13-al2023-headless AS builder
+FROM csanchez/maven:3.9-azulzulu-17-debian AS builder
 WORKDIR /app
-COPY mvnw .
-COPY .mvn .mvn
 COPY pom.xml .
 COPY src src
 
-# Agregar permisos de ejecución al mvnw
-RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline
-RUN ./mvnw clean package -DskipTests
+# Construir el proyecto
+RUN mvn clean package -DskipTests
 
 # Etapa de ejecución
-FROM amazoncorretto:17.0.13-al2023-headless
+FROM amazoncorretto:17-alpine3.19-jdk
 WORKDIR /app
 
-# Instalar las herramientas necesarias para gestión de usuarios
-RUN yum install -y shadow-utils && \
-    yum clean all && \
-    groupadd -r javauser && \
-    useradd -r -g javauser -s /bin/false javauser && \
+# Crear usuario no root y directorios necesarios
+RUN addgroup -S javauser && \
+    adduser -S -D -h /app -s /sbin/nologin -G javauser javauser && \
     mkdir -p /app/logs && \
     chown -R javauser:javauser /app
 
 # Copiar el jar desde la etapa de construcción
-COPY --from=builder /app/target/clinica_veterinaria-0.0.1.jar app_veterinaria.jar
+COPY --from=builder /app/target/*.jar app_veterinaria.jar
 RUN chown javauser:javauser app_veterinaria.jar
 
 USER javauser
@@ -33,6 +27,16 @@ USER javauser
 ENV JAVA_OPTS="-XX:+UseG1GC -XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof"
 ENV SPRING_PROFILES_ACTIVE="prod"
 
+# Declarar volumen para logs
+VOLUME /app/logs
+
+# Exponer el puerto del servicio
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app_veterinaria.jar"]
+# Metadatos
+LABEL maintainer="tu_email@example.com"
+LABEL version="1.0"
+LABEL description="Aplicación de clínica veterinaria construida con Spring Boot."
+
+# Comando de inicio
+ENTRYPOINT ["java", "-XX:+UseG1GC", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75", "-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=/app/logs/heapdump.hprof", "-jar", "app_veterinaria.jar"]
