@@ -33,14 +33,5 @@ VOLUME /app/logs
 # Exponer el puerto del servicio
 EXPOSE 8080
 
-# Metadatos
-<<<<<<< HEAD
-LABEL maintainer="tu_email@example.com"
-=======
-LABEL maintainer="todocodeacademy@gmail.com"
->>>>>>> origin/master
-LABEL version="1.0"
-LABEL description="Aplicación de clínica veterinaria construida con Spring Boot."
-
 # Comando de inicio
 ENTRYPOINT ["java", "-XX:+UseG1GC", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75", "-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=/app/logs/heapdump.hprof", "-jar", "app_veterinaria.jar"]
